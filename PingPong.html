@@ -1,0 +1,330 @@
+<html>
+   <canvas width = "800"  height="600"  id="MyCanvas" style="background: green"></canvas>
+    <script>
+        
+        var g_Canvas        = document.getElementById("MyCanvas");
+        var g_Context       = g_Canvas.getContext("2d");
+        var g_CanvasWidth   = g_Canvas.width;
+        var g_CanvasHeight  = g_Canvas.height;
+        
+        var g_Fps     = 30;
+        var g_TimeInterval  = 1000/g_Fps; 
+        
+        var g_PlayerLeftMove =0;
+        var g_PlayerRightMove =0;
+        var g_COMP_RightMove =0;
+        var g_COMP_LeftMove =0;
+        var g_LaunchBall = 0;
+        
+         var COMP =0;
+         var Player =0;
+        
+        
+        
+                                   function C_Players(l_x,l_y,l_width,l_height,l_color)
+
+                                                {
+                                                        this.xpos = l_x;
+                                                        this.ypos = l_y;
+                                                        this.width = l_width;
+                                                        this.height =l_height 
+                                                        this.color = l_color;
+
+                                                        this.movespeed = 5;
+
+
+                                                        this.draw = function m_draw(l_Ctx)
+                                                        {
+
+                                                    l_Ctx.fillRect(this.xpos,this.ypos,this.width,this.height);  
+                                        };
+
+                                                    this.MovePlayer = function m_move(l_left,l_right)
+                                        {
+                                                    if(l_left ==1)
+                                                {
+                                                    this.ypos -= this.movespeed;
+
+                                                }
+                                            if(l_right ==1)
+                                                {
+                                                    this.ypos += this.movespeed;
+                                                }
+                                        };
+
+                                                    this.movePlayer_2 = function m_move(l_left,l_right)
+                                        {
+                                                    if(l_left ==1)
+                                                {
+                                                    this.ypos -= this.movespeed;
+
+                                                }
+                                                        if(l_right ==1)
+                                                {
+                                                    this.ypos += this.movespeed;
+                                                }
+                                        };
+
+
+
+                                    }
+        
+        
+                                    function C_Ball(l_x,l_y,l_radius)
+                                        {
+                                            this.xpos = l_x;
+                                            this.ypos = l_y;
+                                            this.Ballradius = l_radius;
+                                            this.color = "yellow";
+
+                                            this.movespeed = 5;
+
+
+                                            this.draw = function m_drawBall(l_ctx)
+                                        {
+                                                l_ctx.beginPath();
+                                                l_ctx.arc(this.xpos,this.ypos,this.Ballradius,0,2*Math.PI)
+                                                l_ctx.fillStyle = this.color;
+                                                l_ctx.closePath(); 
+                                                l_ctx.fill();
+                                        };
+
+                                            this.Balllaunch = function m_BallBounce(l_launch)
+                                            {
+                                                if(l_launch ==1)
+                                                {
+
+                                                    this.xpos += this.movespeed;
+
+                                                }
+                                            };
+                                        }
+
+        var g_distance = 0;
+        var g_distance_2 =0;
+        
+        
+        
+        function f_UpdateClosestPointPos()
+                                {
+                                    if(g_ball.xpos < g_COMP.xpos) 
+                                        {
+                                            g_ClosestPointOnBox.xpos = g_COMP.xpos;
+                                        }
+                                    else if(g_ball.xpos > g_COMP.xpos+g_COMP.width)
+                                        {
+                                            g_ClosestPointOnBox.xpos = g_COMP.xpos+g_COMP.width;
+                                        }
+                                    else
+                                        {
+                                            g_ClosestPointOnBox.xpos = g_ball.xpos;
+                                        }
+
+                                    if(g_ball.ypos < g_COMP.ypos) 
+                                        {
+                                            g_ClosestPointOnBox.ypos = g_COMP.ypos;
+                                        }
+                                    else if(g_ball.ypos > g_COMP.ypos+g_COMP.height)
+                                        {
+                                            g_ClosestPointOnBox.ypos = g_COMP.ypos+g_COMP.height;
+                                        }
+                                    else
+                                        {
+                                            g_ClosestPointOnBox.ypos = g_ball.ypos;
+                                        }
+
+
+                                }
+            function f_UpdateClosestPointPos_2()
+                                        {
+                                            if(g_ball.xpos > g_Player.xpos) 
+                                                {
+                                                    g_ClosestPointOnBox_2.xpos = g_Player.xpos;
+                                                }
+                                            else if(g_ball.xpos > g_Player.xpos+g_Player.width)
+                                                {
+                                                    g_ClosestPointOnBox_2.xpos = g_Player.xpos+g_Player.width;
+                                                }
+                                            else
+                                                {
+                                                    g_ClosestPointOnBox_2.xpos = g_ball.xpos;
+                                                }
+
+                                            if(g_ball.ypos < g_Player.ypos) 
+                                                {
+                                                    g_ClosestPointOnBox_2.ypos = g_Player.ypos;
+                                                }
+                                            else if(g_ball.ypos > g_Player.ypos+g_Player.height)
+                                                {
+                                                    g_ClosestPointOnBox_2.ypos = g_Player.ypos+g_Player.height;
+                                                }
+                                            else
+                                                {
+                                                    g_ClosestPointOnBox_2.ypos = g_ball.ypos;
+                                                }
+
+
+                                        }
+        
+       
+        
+        function f_FindDistanceBetweenPlayer_2_Ball(l_x1,l_y1,l_x2,l_y2,l_z1,l_z2)
+                                        {
+                                            return Math.sqrt(((l_x1-l_x2)*(l_x1-l_x2))+((l_y1-l_y2)*(l_y1-l_y2))) 
+                                        }
+
+                                        function f_Ball_paddle_Collision()
+                                        {
+                                            g_distance = f_FindDistanceBetweenPlayer_2_Ball(g_ball.xpos,g_ball.ypos,g_ClosestPointOnBox.xpos,g_ClosestPointOnBox.ypos)
+
+                                            if(g_distance <= g_ball.Ballradius)
+                                                {
+                                                    console.log("Player");
+                                                    g_ball.movespeed = -g_ball.movespeed;
+
+                                                }
+                                            else
+                                            {
+                                                COMP += 10;
+                                            }
+
+
+                                        }
+
+        function f_FindDistanceBetweenPlayer_1_Ball(l_x1,l_y1,l_x2,l_y2,l_z1,l_z2)
+                            {
+                                    return Math.sqrt(((l_x1-l_x2)*(l_x1-l_x2))+((l_y1-l_y2)*(l_y1-l_y2))) 
+                            }
+        
+        function f_Ball_paddle_Collision_2()
+                            {
+                                g_distance_2 = f_FindDistanceBetweenPlayer_1_Ball(g_ball.xpos,g_ball.ypos,g_ClosestPointOnBox_2.xpos,g_ClosestPointOnBox_2.ypos)
+
+                                if(g_distance_2 <g_ball.Ballradius)
+                                    {
+                                        console.log("COMP ");
+                                        g_ball.movespeed += g_ball.xpos;
+                                    }
+                                else
+                                    {
+                                        Player += 10;
+                                    }
+
+                            }
+        
+         function f_Text(l_Ctx)
+                            {
+                                l_Ctx.font = "30px Times Roman";
+                                l_Ctx.fillStyle = "black";
+                                l_Ctx.fillText("Com:) or Player2",20,50);
+                                l_Ctx.fillText("Player:",580,50);
+                            }
+
+        
+       function f_manageScore()
+                           {
+                               if(g_ball.xpos = g_Canvas.width )
+                                   {
+                                      Player += 10;
+                                  }
+
+
+                              }
+        
+        
+        
+         function f_clearCanvas()
+    {
+            g_Context.clearRect(0,0,g_Canvas.width,g_Canvas.height);
+            g_Context.strokeRect(0,0,g_Canvas.width,g_Canvas.height);  
+    }
+        
+        var g_Player = new C_Players(30,250,10,70,"Black");
+        var g_COMP = new C_Players(750,250,10,70,"Black");
+        
+        var g_ball = new C_Ball(400,285,10 );
+        var g_ClosestPointOnBox = new C_Ball(250,250,1);
+        var g_ClosestPointOnBox_2 = new C_Ball(30,250,1);
+        
+        function f_keyDownEventHandler(e)
+            {
+                           if(e.keyCode == 87 )
+                               {
+                                   g_PlayerLeftMove =1;
+                               }
+                            if(e.keyCode == 83)
+                                {
+                                    g_PlayerRightMove =1;
+                                }
+                            if(e.keyCode ==38 )
+                                {
+                                    g_COMP_LeftMove =1;
+                                }
+                            if(e.keyCode == 40)
+                                {
+                                    g_COMP_RightMove =1;
+                                }
+
+                            if(e.keyCode ==32)
+                                {
+                                   g_LaunchBall = 1;
+                                }
+                        }
+        
+        
+        function f_keyUpEventHandler(e)
+            {
+                       if(e.keyCode == 87 )
+                           {
+                               g_PlayerLeftMove =0;
+                           }
+                        if(e.keyCode == 83)
+                            {
+                                g_PlayerRightMove =0;
+                            }
+                        if(e.keyCode ==38 )
+                            {
+                                g_COMP_LeftMove =0;
+                            }
+                        if(e.keyCode == 40)
+                            {
+                                g_COMP_RightMove =0;
+                            }
+                
+           
+                    }
+
+        
+        function f_gameLoop()
+        {
+            
+            f_UpdateClosestPointPos();
+            f_UpdateClosestPointPos_2();
+            f_Ball_paddle_Collision();
+            f_Ball_paddle_Collision_2();
+            g_Player.MovePlayer(g_PlayerLeftMove,g_PlayerRightMove);
+            g_COMP.movePlayer_2(g_COMP_LeftMove,g_COMP_RightMove);
+            g_ball.Balllaunch(g_LaunchBall);
+            f_clearCanvas();
+            g_Player.draw(g_Context);
+            g_COMP.draw(g_Context);
+            g_ball.draw(g_Context);
+            g_ClosestPointOnBox.draw(g_Context);
+           g_ClosestPointOnBox_2.draw(g_Context);
+            f_Text(g_Context);
+        }
+        
+        
+    
+         setInterval(f_gameLoop,g_TimeInterval);
+                
+        
+         document.addEventListener("keydown",f_keyDownEventHandler);
+        document.addEventListener("keyup",f_keyUpEventHandler);
+        
+        
+        
+        
+        
+    </script>
+</html>
